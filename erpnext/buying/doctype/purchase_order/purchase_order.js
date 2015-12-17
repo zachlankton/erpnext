@@ -79,6 +79,13 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 				cur_frm.add_custom_button(__('Re-open'), this.unstop_purchase_order).addClass("btn-primary");
 			}
 		}
+        
+        cur_frm.add_custom_button(__("Show Receipts"), function() {
+            frappe.route_options = {
+                "Purchase Receipt Item.prevdoc_docname": cur_frm.doc.name
+            }
+            frappe.set_route("List", "Purchase Receipt");
+        });
 	},
 
 	make_stock_entry: function() {

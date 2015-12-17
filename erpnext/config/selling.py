@@ -12,10 +12,15 @@ def get_data():
 					"name": "Customer",
 					"description": _("Customer database."),
 				},
+                {
+					"type": "doctype",
+					"name": "Production Quote",
+					"description": _("Prodction Quotes with Volume Price Breaks to Leads or Customers."),
+				},
 				{
 					"type": "doctype",
 					"name": "Quotation",
-					"description": _("Quotes to Leads or Customers."),
+					"description": _("Standard Quotes with Line Totals and Grand Totals to Leads or Customers."),
 				},
 				{
 					"type": "doctype",

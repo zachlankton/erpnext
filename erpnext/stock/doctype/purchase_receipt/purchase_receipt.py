@@ -127,7 +127,8 @@ class PurchaseReceipt(BuyingController):
 			"Purchase Order Item": {
 				"ref_dn_field": "prevdoc_detail_docname",
 				"compare_fields": [["project_name", "="], ["uom", "="], ["item_code", "="]],
-				"is_child_table": True
+				"is_child_table": True,
+				"allow_duplicate_prev_row_id": True
 			}
 		})
 
