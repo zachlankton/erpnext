@@ -159,6 +159,10 @@ class StockEntry(StockController):
 						elif self.pro_doc and cstr(d.t_warehouse) != self.pro_doc.fg_warehouse:
 							frappe.throw(_("Target warehouse in row {0} must be same as Production Order").format(d.idx))
 
+					elif d.scrap:
+						d.s_warehouse = None
+						d.basic_rate = 0;
+
 					else:
 						d.t_warehouse = None
 						if not d.s_warehouse:
@@ -259,11 +263,15 @@ class StockEntry(StockController):
 			# get basic rate
 			if not d.bom_no:
 				if not flt(d.basic_rate) or d.s_warehouse or force:
-					basic_rate = flt(get_incoming_rate(args), self.precision("basic_rate", d))
+					basic_rate = flt((args), self.precision("basic_rate", d))
 					if basic_rate > 0:
 						d.basic_rate = basic_rate
 
+				if d.scrap:
+					d.basic_rate = 0
+
 				d.basic_amount = flt(flt(d.transfer_qty) * flt(d.basic_rate), d.precision("basic_amount"))
+
 				if not d.t_warehouse:
 					raw_material_cost += flt(d.basic_amount)
 
@@ -506,7 +514,7 @@ class StockEntry(StockController):
 
 			ret = {
 				"actual_qty" : get_previous_sle(args).get("qty_after_transaction") or 0,
-				"basic_rate" : get_incoming_rate(args)
+				"basic_rate" : (args)
 			}
 		return ret
 

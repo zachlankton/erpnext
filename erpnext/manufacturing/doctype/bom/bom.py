@@ -32,6 +32,7 @@ class BOM(Document):
 		self.set_bom_material_details()
 		self.calculate_cost()
 		self.validate_operations()
+		self.validate_scrap()
 
 	def on_update(self):
 		self.check_recursion()
@@ -358,6 +359,11 @@ class BOM(Document):
 	def validate_operations(self):
 		if self.with_operations and not self.get('operations'):
 			frappe.throw(_("Operations cannot be left blank."))
+
+	def validate_scrap(self):
+		for item in self.get("items"):
+			if flt(item.scrap) > 0 and not item.scrap_warehouse:
+				frappe.throw(_("Must select default scrap warehouse for raw material in row {0} if scrap is greater than 0%").format(item.idx))
 
 def get_bom_items_as_dict(bom, company, qty=1, fetch_exploded=1):
 	item_dict = {}
