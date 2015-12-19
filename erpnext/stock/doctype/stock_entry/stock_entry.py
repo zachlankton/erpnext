@@ -349,9 +349,9 @@ class StockEntry(StockController):
 		"""validation: finished good quantity should be same as manufacturing quantity"""
 		items_with_target_warehouse = []
 		for d in self.get('items'):
-			if d.bom_no and flt(d.transfer_qty) != flt(self.fg_completed_qty):
-				frappe.throw(_("Quantity in row {0} ({1}) must be same as manufactured quantity {2}"). \
-					format(d.idx, d.transfer_qty, self.fg_completed_qty))
+			if d.bom_no and self.get_same_item_code_qty_sum(d.item_code) != flt(self.fg_completed_qty):
+				frappe.throw(_("The sum of all {0} items (currently {1}) must be same as manufactured quantity {2}"). \
+					format(d.item_code, self.get_same_item_code_qty_sum(d.item_code), self.fg_completed_qty))
 
 			if self.production_order and self.purpose == "Manufacture" and d.t_warehouse:
 				items_with_target_warehouse.append(d.item_code)
@@ -362,6 +362,13 @@ class StockEntry(StockController):
 			if production_item not in items_with_target_warehouse:
 				frappe.throw(_("Finished Item {0} must be entered for Manufacture type entry")
 					.format(production_item))
+
+	def get_same_item_code_qty_sum(self, item):
+		item_sum = 0
+		for d in self.get('items'):
+			if d.item_code == item:
+				item_sum += flt(d.transfer_qty)
+		return item_sum
 
 	def update_stock_ledger(self):
 		sl_entries = []
