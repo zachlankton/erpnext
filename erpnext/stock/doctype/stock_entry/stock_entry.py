@@ -176,12 +176,50 @@ class StockEntry(StockController):
 			# check if production order is entered
 
 			if self.purpose=="Manufacture" and self.production_order:
+				self.validate_raw_material_qty()
+				self.validate_no_dupe_bom_item()
 				if not self.fg_completed_qty:
 					frappe.throw(_("For Quantity (Manufactured Qty) is mandatory"))
 				self.check_if_operations_completed()
 				self.check_duplicate_entry_for_production_order()
 		elif self.purpose != "Material Transfer":
 			self.production_order = None
+
+	def validate_no_dupe_bom_item(self):
+		bom_item = {}
+		for d in self.get("items"):
+			if d.bom_no:
+				if d.item_name in bom_item:
+					frappe.throw(_("Cannot Have Multiple Rows with {0} to be counted for manufacture, Please combine into one row.").format(d.item_name))
+				else:
+					bom_item[d.item_name] = "True"
+
+	def validate_raw_material_qty(self):
+
+		raw_materials_required = {}
+
+		for d in self.get('items'):
+
+			if d.bom_no:
+				bom = frappe.get_doc("BOM", d.bom_no)
+				qty = self.get_same_item_code_qty_sum(d.item_name)
+
+				for rm in bom.items:
+
+					if rm.item_name not in [a.item_name for a in self.get("items")]:
+						frappe.throw(_("Raw Material {0} Required for Manufacture").format(rm.item_name))
+
+					if rm.item_name in raw_materials_required:
+						raw_materials_required[rm.item_name] += (qty * rm.qty_consumed_per_unit)
+
+					else:
+						raw_materials_required[rm.item_name] = (qty * rm.qty_consumed_per_unit)
+
+		for d in self.get('items'):
+			if d.item_name in raw_materials_required:
+				if d.qty != raw_materials_required[d.item_name]:
+					frappe.throw(_("Raw Material Qty For {0} Should Be {1}.  Qty of parts manufactured consumes this much.").format(d.item_name, raw_materials_required[d.item_name]))
+
 
 	def check_if_operations_completed(self):
 		"""Check if Time Logs are completed against before manufacturing to capture operating costs."""
