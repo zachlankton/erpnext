@@ -317,9 +317,34 @@ class StockEntry(StockController):
 
 	def set_basic_rate_for_finished_goods(self, raw_material_cost):
 		if self.purpose in ["Manufacture", "Repack"]:
-			number_of_fg_items = len([t.t_warehouse for t in self.get("items") if t.t_warehouse])
+			number_of_fg_items = len([t.t_warehouse for t in self.get("items") if t.t_warehouse and t.bom_no])
+
+			basic_raw_material_rates = {}
 			for d in self.get("items"):
-				if d.bom_no or (d.t_warehouse and number_of_fg_items == 1):
+				if d.s_warehouse:
+					basic_raw_material_rates[d.item_name] = {"basic_rt": flt(d.basic_rate), "basic_amnt": flt(d.basic_amount)}
+
+			for d in self.get('items'):
+
+				if d.bom_no:
+					bom = frappe.get_doc("BOM", d.bom_no)
+					qty = self.get_same_item_code_qty_sum(d.item_name)
+
+					d.basic_amount = 0
+
+					bom_items = [bi.item_name for bi in bom.items]
+
+					for rm in bom.items:
+
+						d.basic_amount += (rm.qty_consumed_per_unit * basic_raw_material_rates[rm.item_name]["basic_rt"] * qty)
+
+					for nbi in basic_raw_material_rates:
+						if nbi not in bom_items:
+							d.basic_amount += basic_raw_material_rates[nbi]["basic_amnt"] / number_of_fg_items
+
+					d.basic_rate = d.basic_amount / qty
+
+				elif d.t_warehouse and number_of_fg_items == 1:
 					d.basic_rate = flt(raw_material_cost / flt(d.transfer_qty), d.precision("basic_rate"))
 					d.basic_amount = flt(raw_material_cost, d.precision("basic_amount"))
 
@@ -338,8 +363,9 @@ class StockEntry(StockController):
 
 	def update_valuation_rate(self):
 		for d in self.get("items"):
+			qty = self.get_same_item_code_qty_sum(d.item_name)
 			d.amount = flt(d.basic_amount + flt(d.additional_cost), d.precision("amount"))
-			d.valuation_rate = flt(flt(d.basic_rate) + flt(d.additional_cost) / flt(d.transfer_qty),
+			d.valuation_rate = flt(flt(d.basic_rate) + flt(d.additional_cost) / qty,
 				d.precision("valuation_rate"))
 
 	def set_total_incoming_outgoing_value(self):
