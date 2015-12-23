@@ -216,7 +216,7 @@ class StockEntry(StockController):
 						raw_materials_required[rm.item_name] = (qty * rm.qty_consumed_per_unit)
 
 		for d in self.get('items'):
-			if d.item_name in raw_materials_required:
+			if d.item_name in raw_materials_required and d.s_warehouse:
 				if d.qty != raw_materials_required[d.item_name]:
 					frappe.throw(_("Raw Material Qty For {0} Should Be {1}.  Qty of parts manufactured consumes this much.").format(d.item_name, raw_materials_required[d.item_name]))
 
