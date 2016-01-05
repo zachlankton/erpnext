@@ -184,17 +184,46 @@ class ProductionOrder(Document):
 		if not self.bom_no or cint(frappe.db.get_single_value("Manufacturing Settings", "disable_capacity_planning")):
 			return
 		self.set('operations', [])
-		operations = frappe.db.sql("""select operation, description, workstation, idx,
-			hour_rate, time_in_mins, "Pending" as status from `tabBOM Operation`
-			where parent = %s order by idx""", self.bom_no, as_dict=1)
-		self.set('operations', operations)
-		self.calculate_time()
+		if self.bom_no:
+			operations = frappe.db.sql("""select operation, description, workstation, idx,
+				hour_rate, time_in_mins, "Pending" as status from `tabBOM Operation`
+				where parent = %s order by idx""", self.bom_no, as_dict=1)
+			self.set('operations', operations)
+		if self.order_type == "BOM":
+			self.calculate_time()
+
+	def set_production_order_items(self):
+		self.set('production_items', [])
+		items = frappe.db.sql(""" SELECT bom as bom_no FROM `tabProcess List`
+			WHERE parent = %s order by idx  """, self.process, as_dict=1)
+		self.set('production_items', items)
+		items = self.get("production_items")
+		for d in items:
+			d.production_item = frappe.db.get_value("BOM", d.bom_no, "item_name")
+		self.bom_no = items[0].bom_no
+		self.set_production_order_operations()
+		self.bom_no = ""
+
 
 	def calculate_time(self):
-		bom_qty = frappe.db.get_value("BOM", self.bom_no, "quantity")
+		if self.order_type == "BOM":
+			bom_qty = frappe.db.get_value("BOM", self.bom_no, "quantity")
+
+		if self.order_type == "Process":
+			items = self.get("production_items")
+			self.bom_no = items[0].bom_no
+			self.set_production_order_operations()
+			self.bom_no = ""
 
 		for d in self.get("operations"):
-			d.time_in_mins = flt(d.time_in_mins) / flt(bom_qty) * flt(self.qty)
+			if self.order_type == "Process":
+				total_time = []
+				for item in self.get("production_items"):
+					bom_qty = frappe.db.get_value("BOM", item.bom_no, "quantity")
+					total_time.append( flt(d.time_in_mins) / flt(bom_qty) * flt(item.items_qty) )
+				d.time_in_mins = max(total_time)
+			else:
+				d.time_in_mins = flt(d.time_in_mins) / flt(bom_qty) * flt(self.qty)
 
 		self.calculate_operating_cost()
 
