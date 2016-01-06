@@ -156,12 +156,11 @@ class StockEntry(StockController):
 						if not d.t_warehouse:
 							frappe.throw(_("Target warehouse is mandatory for row {0}").format(d.idx))
 
-						elif self.pro_doc and cstr(d.t_warehouse) != self.pro_doc.fg_warehouse:
-							frappe.throw(_("Target warehouse in row {0} must be same as Production Order").format(d.idx))
+						#elif self.pro_doc and cstr(d.t_warehouse) != self.pro_doc.fg_warehouse:
+						#	frappe.throw(_("Target warehouse in row {0} must be same as Production Order").format(d.idx))
 
 					elif d.scrap:
 						d.s_warehouse = None
-						d.basic_rate = 0;
 
 					else:
 						d.t_warehouse = None
@@ -177,7 +176,7 @@ class StockEntry(StockController):
 
 			if self.purpose=="Manufacture" and self.production_order:
 				self.validate_raw_material_qty()
-				self.validate_no_dupe_bom_item()
+				#self.validate_no_dupe_bom_item()
 				if not self.fg_completed_qty:
 					frappe.throw(_("For Quantity (Manufactured Qty) is mandatory"))
 				self.check_if_operations_completed()
@@ -197,8 +196,11 @@ class StockEntry(StockController):
 	def validate_raw_material_qty(self):
 
 		raw_materials_required = {}
+		item_list = []
 
 		for d in self.get('items'):
+			if d.item_name in item_list: continue
+			item_list.append(d.item_name)
 
 			if d.bom_no:
 				bom = frappe.get_doc("BOM", d.bom_no)
@@ -305,9 +307,6 @@ class StockEntry(StockController):
 					if basic_rate > 0:
 						d.basic_rate = basic_rate
 
-				if d.scrap:
-					d.basic_rate = 0
-
 				d.basic_amount = flt(flt(d.transfer_qty) * flt(d.basic_rate), d.precision("basic_amount"))
 
 				if not d.t_warehouse:
@@ -320,9 +319,17 @@ class StockEntry(StockController):
 			number_of_fg_items = len([t.t_warehouse for t in self.get("items") if t.t_warehouse and t.bom_no])
 
 			basic_raw_material_rates = {}
+
 			for d in self.get("items"):
+
 				if d.s_warehouse:
-					basic_raw_material_rates[d.item_name] = {"basic_rt": flt(d.basic_rate), "basic_amnt": flt(d.basic_amount)}
+					scrap_amount = 0
+					for other_items in self.get("items"):
+						if  other_items.t_warehouse and other_items.item_name == d.item_name:
+							scrap_amount = other_items.transfer_qty * d.basic_rate
+
+					basic_raw_material_rates[d.item_name] = {"basic_rt": flt(d.basic_rate), "basic_amnt": flt(d.basic_amount) - flt(scrap_amount)}
+
 
 			for d in self.get('items'):
 
@@ -335,14 +342,14 @@ class StockEntry(StockController):
 					bom_items = [bi.item_name for bi in bom.items]
 
 					for rm in bom.items:
-
-						d.basic_amount += (rm.qty_consumed_per_unit * basic_raw_material_rates[rm.item_name]["basic_rt"] * qty)
+						d.basic_amount += ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["basic_rt"] * d.transfer_qty)
 
 					for nbi in basic_raw_material_rates:
 						if nbi not in bom_items:
 							d.basic_amount += basic_raw_material_rates[nbi]["basic_amnt"] / number_of_fg_items
 
-					d.basic_rate = d.basic_amount / qty
+					d.basic_rate = d.basic_amount / d.transfer_qty
+					raw_material_cost -= d.basic_amount
 
 				elif d.t_warehouse and number_of_fg_items == 1:
 					d.basic_rate = flt(raw_material_cost / flt(d.transfer_qty), d.precision("basic_rate"))
@@ -353,10 +360,10 @@ class StockEntry(StockController):
 			self.additional_costs = []
 
 		self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
-		total_basic_amount = sum([flt(t.basic_amount) for t in self.get("items") if t.t_warehouse])
+		total_basic_amount = sum([flt(t.basic_amount) for t in self.get("items") if t.t_warehouse and not t.scrap])
 
 		for d in self.get("items"):
-			if d.t_warehouse and total_basic_amount:
+			if d.t_warehouse and total_basic_amount and not d.scrap:
 				d.additional_cost = (flt(d.basic_amount) / total_basic_amount) * self.total_additional_costs
 			else:
 				d.additional_cost = 0
@@ -365,7 +372,7 @@ class StockEntry(StockController):
 		for d in self.get("items"):
 			qty = self.get_same_item_code_qty_sum(d.item_name)
 			d.amount = flt(d.basic_amount + flt(d.additional_cost), d.precision("amount"))
-			d.valuation_rate = flt(flt(d.basic_rate) + flt(d.additional_cost) / qty,
+			d.valuation_rate = flt(flt(d.basic_rate) + flt(d.additional_cost) / d.transfer_qty,
 				d.precision("valuation_rate"))
 
 	def set_total_incoming_outgoing_value(self):
