@@ -143,7 +143,7 @@ def get_basic_details(args, item):
 		item.update_template_tables()
 
 	from frappe.defaults import get_user_default_as_list
-	user_default_warehouse_list = get_user_default_as_list('warehouse')
+	user_default_warehouse_list = get_user_default_as_list('Warehouse')
 	user_default_warehouse = user_default_warehouse_list[0] \
 		if len(user_default_warehouse_list)==1 else ""
 
@@ -246,7 +246,7 @@ def insert_item_price(args):
 				"price_list_rate": price_list_rate
 			})
 			item_price.insert()
-			frappe.msgprint("Item Price added for {0} in Price List {1}".format(args.item_code,
+			frappe.msgprint(_("Item Price added for {0} in Price List {1}").format(args.item_code,
 				args.price_list))
 
 def get_price_list_rate_for(args, item_code):
