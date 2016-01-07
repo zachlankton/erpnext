@@ -161,15 +161,18 @@ $.extend(cur_frm.cscript, {
 	},
 
 	production_item: function(doc) {
-		frappe.call({
-			method: "erpnext.manufacturing.doctype.production_order.production_order.get_item_details",
-			args: { item: doc.production_item },
-			callback: function(r) {
-				$.each(["description", "stock_uom", "bom_no"], function(i, field) {
-					cur_frm.set_value(field, r.message[field]);
-				});
-			}
-		});
+		if (doc.production_item != ""){
+			frappe.call({
+				method: "erpnext.manufacturing.doctype.production_order.production_order.get_item_details",
+				args: { item: doc.production_item },
+				callback: function(r) {
+					$.each(["description", "stock_uom", "bom_no"], function(i, field) {
+						cur_frm.set_value(field, r.message[field]);
+					});
+				}
+			});
+		}
+
 	},
 
 	make_se: function(purpose) {
@@ -201,15 +204,47 @@ $.extend(cur_frm.cscript, {
 	},
 
 	bom_no: function() {
-		return this.frm.call({
-			doc: this.frm.doc,
-			method: "set_production_order_operations"
-		});
+		if (this.frm.doc.bom_no != ""){
+			return this.frm.call({
+				doc: this.frm.doc,
+				method: "set_production_order_operations"
+			});
+		}
+	},
+
+	process: function() {
+		if (this.frm.doc.process != ""){
+			return this.frm.call({
+				doc: this.frm.doc,
+				method: "set_production_order_items"
+			});
+		}
 	},
 
 	qty: function() {
 		frappe.ui.form.trigger("Production Order", 'bom_no')
 	},
+
+	items_qty: function() {
+		return this.frm.call({
+			doc: this.frm.doc,
+			method: "calculate_time"
+		});
+	},
+
+	order_type: function(){
+		this.frm.set_value({
+			"production_item": "",
+			"bom_no": "",
+			"qty": "",
+			"process": "",
+			"description": "",
+			"production_items": [],
+			"operations": []
+		});
+
+	},
+
 	show_time_logs: function(doc, cdt, cdn) {
 		var child = locals[cdt][cdn]
 		frappe.route_options = {"operation_id": child.name};

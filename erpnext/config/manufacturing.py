@@ -15,6 +15,12 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Processes",
+					"description": _("Can be used to produce multiple BOM from one process"),
+					"label": _("Processes")
+				},
+				{
+					"type": "doctype",
 					"name": "Production Order",
 					"description": _("Orders released for production."),
 				},
