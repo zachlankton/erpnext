@@ -229,7 +229,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		erpnext.setup_serial_no();
 	},
 
-	basic_rate: function(doc, cdt, cdn) {
+/* 	basic_rate: function(doc, cdt, cdn) {
 		var item = frappe.model.get_doc(cdt, cdn);
 		this.calculate_basic_amount(item);
 	},
@@ -309,7 +309,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		);
 
 		this.frm.set_value("total_additional_costs", flt(total_additional_costs, precision("total_additional_costs")));
-	},
+	}, */
 });
 
 cur_frm.script_manager.make(erpnext.stock.StockEntry);
@@ -471,9 +471,9 @@ cur_frm.cscript.company = function(doc, cdt, cdn) {
 cur_frm.cscript.posting_date = function(doc, cdt, cdn){
 	erpnext.get_fiscal_year(doc.company, doc.posting_date);
 }
-
+/*
 frappe.ui.form.on('Landed Cost Taxes and Charges', {
 	amount: function(frm) {
 		frm.cscript.calculate_amount();
 	}
-})
+}) */

@@ -317,7 +317,7 @@ class StockEntry(StockController):
 
 	def set_basic_rate_for_finished_goods(self, raw_material_cost):
 		if self.purpose in ["Manufacture", "Repack"]:
-			number_of_fg_items = len([t.t_warehouse for t in self.get("items") if t.t_warehouse and t.bom_no])
+			number_of_fg_items = len([t.t_warehouse for t in self.get("items") if t.t_warehouse and t.bom_no and not t.scrap])
 
 			basic_raw_material_rates = {}
 
@@ -346,13 +346,15 @@ class StockEntry(StockController):
 						d.basic_amount += ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["basic_rt"] * d.transfer_qty)
 
 					for nbi in basic_raw_material_rates:
-						if nbi not in bom_items:
+						if nbi not in bom_items and not d.scrap:
 							d.basic_amount += basic_raw_material_rates[nbi]["basic_amnt"] / number_of_fg_items
 
 					d.basic_rate = d.basic_amount / d.transfer_qty
 					raw_material_cost -= d.basic_amount
 
-				elif d.t_warehouse and number_of_fg_items == 1:
+			for d in self.get('items'):
+
+				if d.t_warehouse and not d.bom_no:
 					d.basic_rate = flt(raw_material_cost / flt(d.transfer_qty), d.precision("basic_rate"))
 					d.basic_amount = flt(raw_material_cost, d.precision("basic_amount"))
 
@@ -381,11 +383,17 @@ class StockEntry(StockController):
 
 	def set_total_incoming_outgoing_value(self):
 		self.total_incoming_value = self.total_outgoing_value = 0.0
+		total_raw_out = 0;
 		for d in self.get("items"):
 			if d.t_warehouse:
 				self.total_incoming_value += flt(d.amount)
+				total_raw_out += flt(d.basic_amount)
 			if d.s_warehouse:
 				self.total_outgoing_value += flt(d.amount)
+		if total_raw_out != self.total_outgoing_value:
+			pass
+			frappe.throw(_("""Total Raw In and Out does not balance.  Source Raw Material In is ${0}. Target Material Out is ${1}
+			Check to make sure BOMs and Scrap Items are setup properly.""").format(self.total_outgoing_value, total_raw_out))
 
 		self.value_difference = self.total_incoming_value - self.total_outgoing_value
 
