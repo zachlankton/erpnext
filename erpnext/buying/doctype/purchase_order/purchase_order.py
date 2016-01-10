@@ -36,6 +36,7 @@ class PurchaseOrder(BuyingController):
 	def validate(self):
 		super(PurchaseOrder, self).validate()
 		self.set_owner_info()
+
 		self.set_status()
 		pc_obj = frappe.get_doc('Purchase Common')
 		pc_obj.validate_for_items(self)
@@ -55,6 +56,11 @@ class PurchaseOrder(BuyingController):
 		self.customer_contact_display = owner_info[0].employee_name
 		self.customer_contact_mobile = owner_info[0].cell_number
 		self.customer_contact_email = owner_info[0].company_email
+
+	def get_supplier_details(self):
+		supplier = frappe.get_doc('Supplier', self.supplier)
+		self.ship_instructions = supplier.default_ship_instructions
+		self.credit_terms = supplier.credit_days
 
 	def validate_with_previous_doc(self):
 		super(PurchaseOrder, self).validate_with_previous_doc({
