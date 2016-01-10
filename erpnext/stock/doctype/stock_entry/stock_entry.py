@@ -349,8 +349,11 @@ class StockEntry(StockController):
 						if nbi not in bom_items and not d.scrap:
 							d.basic_amount += basic_raw_material_rates[nbi]["basic_amnt"] / number_of_fg_items
 
-					d.basic_rate = d.basic_amount / d.transfer_qty
-					raw_material_cost -= d.basic_amount
+					if d.transfer_qty == 0:
+						d.basic_rate = 0;
+					else:
+						d.basic_rate = d.basic_amount / d.transfer_qty
+						raw_material_cost -= d.basic_amount
 
 			for d in self.get('items'):
 
@@ -376,10 +379,13 @@ class StockEntry(StockController):
 			qty = self.get_same_item_code_qty_sum(d.item_name)
 			d.amount = flt(d.basic_amount + flt(d.additional_cost), d.precision("amount"))
 
-			d.valuation_rate = flt(
-				flt(d.basic_rate)
-				+ (flt(d.additional_cost) / flt(d.transfer_qty)),
-				d.precision("valuation_rate"))
+			if d.transfer_qty == 0:
+				d.valuation_rate = 0
+			else:
+				d.valuation_rate = flt(
+					flt(d.basic_rate)
+					+ (flt(d.additional_cost) / flt(d.transfer_qty)),
+					d.precision("valuation_rate"))
 
 	def set_total_incoming_outgoing_value(self):
 		self.total_incoming_value = self.total_outgoing_value = 0.0
