@@ -401,10 +401,10 @@ class StockEntry(StockController):
 				total_raw_out += flt(d.basic_amount)
 			if d.s_warehouse:
 				self.total_outgoing_value += flt(d.amount)
-		if total_raw_out != self.total_outgoing_value:
-			pass
-			frappe.throw(_("""Total Raw In and Out does not balance.  Source Raw Material In is ${0}. Target Material Out is ${1}
-			Check to make sure BOMs and Scrap Items are setup properly.""").format(self.total_outgoing_value, total_raw_out))
+# 		if total_raw_out != self.total_outgoing_value:
+# 			pass
+# 			frappe.throw(_("""Total Raw In and Out does not balance.  Source Raw Material In is ${0}. Target Material Out is ${1}
+# 			Check to make sure BOMs and Scrap Items are setup properly.""").format(self.total_outgoing_value, total_raw_out))
 
 		self.value_difference = self.total_incoming_value - self.total_outgoing_value
 
