@@ -654,7 +654,7 @@ class StockEntry(StockController):
 			if self.purpose in ("Manufacture", "Repack"):
 				self.load_items_from_bom()
 
-		self.add_scrap_items()
+		if self.purpose == "Manufacture": self.add_scrap_items()
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
 
