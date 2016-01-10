@@ -358,9 +358,12 @@ class StockEntry(StockController):
 
 			for d in self.get('items'):
 
-				if d.t_warehouse and not d.bom_no:
+				if d.t_warehouse and not d.bom_no and d.transfer_qty != 0:
 					d.basic_rate = flt(raw_material_cost / flt(d.transfer_qty), d.precision("basic_rate"))
 					d.basic_amount = flt(raw_material_cost, d.precision("basic_amount"))
+				else:
+					d.basic_rate = 0
+					d.basic_amount = 0
 
 	def distribute_additional_costs(self):
 		if self.purpose == "Material Issue":
