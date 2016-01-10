@@ -21,6 +21,11 @@
                     Not in Stock
                 </span>
             {% } %}
+			{% if( doc.scrap ) { %}
+                <span class="text-danger small" style="margin-left: 15px;">
+                    Scrap
+                </span>
+            {% } %}
 		</div>
 
         <!-- warehouse -->
