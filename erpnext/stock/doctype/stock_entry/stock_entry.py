@@ -12,6 +12,7 @@ from erpnext.stock.get_item_details import get_available_qty, get_default_cost_c
 from erpnext.manufacturing.doctype.bom.bom import validate_bom_no
 from erpnext.accounts.utils import validate_fiscal_year
 import json
+import copy
 
 class IncorrectValuationRateError(frappe.ValidationError): pass
 class DuplicateEntryForProductionOrderError(frappe.ValidationError): pass
@@ -653,8 +654,54 @@ class StockEntry(StockController):
 			if self.purpose in ("Manufacture", "Repack"):
 				self.load_items_from_bom()
 
+		self.add_scrap_items()
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
+
+	def add_scrap_items(self):
+		scrap = self.get_total_raw_scrap()
+		default_scrap_warehouse = frappe.db.sql("SELECT *  FROM `tabWarehouse` WHERE `default_scrap_warehouse` = 1", as_dict=1)[0]["name"]
+		for d in copy.copy(self.get('items')):
+			if d.item_name not in scrap:
+				scrap[d.item_name] = {"scrap_amount": 0, "scrap_warehouse": None}
+
+
+			self.add_to_stock_entry_detail({
+				d.item_name: {
+					"to_warehouse": scrap[d.item_name]["scrap_warehouse"] or default_scrap_warehouse,
+					"from_warehouse": "",
+					"qty": scrap[d.item_name]["scrap_amount"],
+					"item_name": d.item_name,
+					"description": d.description,
+					"stock_uom": d.stock_uom,
+					"expense_account": d.expense_account,
+					"cost_center": d.cost_center,
+					"scrap": "1"
+				}
+			}, bom_no = d.bom_no)
+
+
+	def get_total_raw_scrap(self):
+		raw_material_scrap = {}
+		item_list = []
+
+		for d in self.get('items'):
+			if d.item_name in item_list: continue
+			item_list.append(d.item_name)
+
+			if d.bom_no:
+				bom = frappe.get_doc("BOM", d.bom_no)
+				qty = self.get_same_item_code_qty_sum(d.item_name)
+
+				for rm in bom.items:
+					if rm.item_name in raw_material_scrap:
+						raw_material_scrap[rm.item_name]["scrap_amount"] += (qty * (rm.qty_consumed_per_unit * (rm.scrap/100) ) )
+
+					else:
+						raw_material_scrap[rm.item_name] = {"scrap_amount": (qty * (rm.qty_consumed_per_unit * (rm.scrap/100) ) ), "scrap_warehouse": rm.scrap_warehouse }
+
+		return raw_material_scrap
+
 
 	def load_items_from_bom(self):
 		if self.production_order:
@@ -801,6 +848,7 @@ class StockEntry(StockController):
 			["default_expense_account", "cost_center"])[0]
 
 		for d in item_dict:
+			if "scrap" not in item_dict[d]: item_dict[d]["scrap"] = 0
 			se_child = self.append('items')
 			se_child.s_warehouse = item_dict[d].get("from_warehouse")
 			se_child.t_warehouse = item_dict[d].get("to_warehouse")
@@ -812,6 +860,7 @@ class StockEntry(StockController):
 			se_child.qty = flt(item_dict[d]["qty"])
 			se_child.expense_account = item_dict[d]["expense_account"] or expense_account
 			se_child.cost_center = item_dict[d]["cost_center"] or cost_center
+			se_child.scrap = item_dict[d]["scrap"]
 
 			if se_child.s_warehouse==None:
 				se_child.s_warehouse = self.from_warehouse
