@@ -660,7 +660,11 @@ class StockEntry(StockController):
 
 	def add_scrap_items(self):
 		scrap = self.get_total_raw_scrap()
-		default_scrap_warehouse = frappe.db.sql("SELECT *  FROM `tabWarehouse` WHERE `default_scrap_warehouse` = 1", as_dict=1)[0]["name"]
+		default_scrap_warehouse = frappe.db.sql("SELECT *  FROM `tabWarehouse` WHERE `default_scrap_warehouse` = 1", as_dict=1)
+		if len(default_scrap_warehouse) == 0:
+			default_scrap_warehouse = None
+		else:
+			default_scrap_warehouse = default_scrap_warehouse[0]["name"]
 		for d in copy.copy(self.get('items')):
 			if d.item_name not in scrap:
 				scrap[d.item_name] = {"scrap_amount": 0, "scrap_warehouse": None}
