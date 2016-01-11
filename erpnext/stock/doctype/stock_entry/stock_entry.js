@@ -324,6 +324,7 @@ cur_frm.cscript.toggle_related_fields = function(doc) {
 	cur_frm.cscript.toggle_enable_bom();
 
 	if (doc.purpose == 'Subcontract') {
+		doc.naming_series = "DL-";
 		doc.customer = doc.customer_name = doc.customer_address =
 			doc.delivery_note_no = doc.sales_invoice_no = null;
 	} else {
