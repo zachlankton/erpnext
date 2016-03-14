@@ -136,6 +136,10 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		this.calculate_basic_amount(d);
 	},
 
+	ship_from: function(){
+		erpnext.utils.get_address_display(this.frm, "ship_from", "ship_from_display");
+	},
+
 	production_order: function() {
 		var me = this;
 		this.toggle_enable_bom();
