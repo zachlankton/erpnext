@@ -146,7 +146,14 @@ class TimeLog(Document):
 
 		if self.production_order and self.for_manufacturing:
 			if not self.operation_id:
-				frappe.throw(_("Operation ID not set"))
+				if not self.production_order and not self.operation and not self.workstation:
+					frappe.throw(_("Operation ID not set"))
+				else:
+					op_id = frappe.db.get_value("Production Order Operation", {"operation": self.operation, "workstation":self.workstation, "parent":self.production_order}, "name")
+					if op_id:
+						self.operation_id = op_id
+					else:
+						frappe.throw(_("Operation ID not found for Production Order: {0}, Operation: {1}, and Workstation: {2}").format(self.production_order, self.operation, self.workstation))
 
 			dates = self.get_operation_start_end_time()
 			summary = self.get_time_log_summary()
