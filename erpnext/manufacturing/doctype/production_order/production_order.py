@@ -357,7 +357,8 @@ class ProductionOrder(Document):
 		if frappe.db.get_value("Item", self.production_item, "has_variants"):
 			frappe.throw(_("Production Order cannot be raised against a Item Template"), ItemHasVariantError)
 
-		validate_end_of_life(self.production_item)
+		if self.order_type = "BOM":
+			validate_end_of_life(self.production_item)
 
 	def validate_qty(self):
 		if not self.qty > 0:
