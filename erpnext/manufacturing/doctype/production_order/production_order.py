@@ -361,7 +361,7 @@ class ProductionOrder(Document):
 			validate_end_of_life(self.production_item)
 
 	def validate_qty(self):
-		if not self.qty > 0:
+		if not self.qty > 0 and self.order_type == "BOM":
 			frappe.throw(_("Quantity to Manufacture must be greater than 0."))
 
 	def validate_operation_time(self):
