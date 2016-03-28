@@ -308,6 +308,7 @@ class StockEntry(StockController):
 					basic_rate = flt(get_incoming_rate(args), self.precision("basic_rate", d))
 					if basic_rate > 0:
 						d.basic_rate = basic_rate
+					if d.scrap: d.basic_rate = frappe.db.get_value("Item", d.item_name, "scrap_item_resale_rate")
 
 				d.basic_amount = flt(flt(d.transfer_qty) * flt(d.basic_rate), d.precision("basic_amount"))
 
@@ -325,27 +326,37 @@ class StockEntry(StockController):
 			for d in self.get("items"):
 
 				if d.s_warehouse:
+					scrap_item_resale_rate = frappe.db.get_value("Item", d.item_name, "scrap_item_resale_rate")
+					scrap_additional_rate = d.basic_rate - flt(scrap_item_resale_rate)
+
 					scrap_amount = 0
 					for other_items in self.get("items"):
 						if  other_items.t_warehouse and other_items.item_name == d.item_name:
 							scrap_amount = other_items.transfer_qty * d.basic_rate
 
-					basic_raw_material_rates[d.item_name] = {"basic_rt": flt(d.basic_rate), "basic_amnt": flt(d.basic_amount) - flt(scrap_amount)}
+					basic_raw_material_rates[d.item_name] = {"basic_rt": flt(d.basic_rate) + scrap_additional_rate, "basic_amnt": flt(d.basic_amount) - flt(scrap_amount), "scrap_resale_rate": scrap_item_resale_rate}
 
 
 			for d in self.get('items'):
 
 				if d.bom_no:
 					bom = frappe.get_doc("BOM", d.bom_no)
-					qty = self.get_same_item_code_qty_sum(d.item_name)
+					total_qty = self.get_same_item_code_qty_sum(d.item_name)
+					qty = d.transfer_qty
 
 					d.basic_amount = 0
 
 					bom_items = [bi.item_name for bi in bom.items]
 
 					for rm in bom.items:
-						d.basic_amount += ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["basic_rt"] * d.transfer_qty)
-
+						if not d.scrap:
+							scrap_qty = total_qty - qty
+							scrap_original_amount = ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["basic_rt"] * scrap_qty)
+							scrap_amount = ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["scrap_resale_rate"] * scrap_qty)
+							scrap_difference = scrap_original_amount - scrap_amount
+							d.basic_amount += ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["basic_rt"] * d.transfer_qty) + scrap_difference
+						else:
+							d.basic_amount += ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["scrap_resale_rate"] * d.transfer_qty)
 					for nbi in basic_raw_material_rates:
 						if nbi not in bom_items and not d.scrap:
 							d.basic_amount += basic_raw_material_rates[nbi]["basic_amnt"] / number_of_fg_items
@@ -361,9 +372,9 @@ class StockEntry(StockController):
 				if d.transfer_qty == 0:
 					d.basic_rate = 0
 					d.basic_amount = 0
-				elif d.t_warehouse and not d.bom_no:
-					d.basic_rate = flt(raw_material_cost / flt(d.transfer_qty), d.precision("basic_rate"))
-					d.basic_amount = flt(raw_material_cost, d.precision("basic_amount"))
+# 				elif d.t_warehouse and not d.bom_no:
+# 					d.basic_rate = flt(raw_material_cost / flt(d.transfer_qty), d.precision("basic_rate"))
+# 					d.basic_amount = flt(raw_material_cost, d.precision("basic_amount"))
 
 
 	def distribute_additional_costs(self):
