@@ -327,6 +327,7 @@ class StockEntry(StockController):
 
 				if d.s_warehouse:
 					scrap_item_resale_rate = frappe.db.get_value("Item", d.item_name, "scrap_item_resale_rate")
+					scrap_additional_rate = 0
 					if scrap_item_resale_rate and scrap_item_resale_rate > 0:
 						scrap_additional_rate = d.basic_rate - flt(scrap_item_resale_rate)
 
