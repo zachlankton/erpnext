@@ -68,6 +68,12 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 				if(doc.is_subcontracted==="Yes") {
 					cur_frm.add_custom_button(__('Transfer Material to Supplier'),
 						function() { me.make_stock_entry(); });
+					cur_frm.add_custom_button(__("Show Transfers"), function() {
+						frappe.route_options = {
+							"Purchase Order": cur_frm.doc.name
+							}
+						frappe.set_route("List", "Stock Entry");
+					});
 				}
 			}
 
