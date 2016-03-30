@@ -70,7 +70,7 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 						function() { me.make_stock_entry(); });
 					cur_frm.add_custom_button(__("Show Transfers"), function() {
 						frappe.route_options = {
-							"Purchase Order": cur_frm.doc.name
+							"purchase_order": cur_frm.doc.name
 							}
 						frappe.set_route("List", "Stock Entry");
 					});
