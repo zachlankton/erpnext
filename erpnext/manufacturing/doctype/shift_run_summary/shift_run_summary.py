@@ -7,4 +7,6 @@ import frappe
 from frappe.model.document import Document
 
 class ShiftRunSummary(Document):
-	pass
+	def on_submit(self):
+		prod_order = frappe.get_doc("Production Order", self.production_order);
+		prod_order.make_time_logs();
