@@ -13,6 +13,7 @@ class ShiftRunSummary(Document):
 		
 		prod_order = frappe.get_doc("Production Order", self.production_order)
 		time_log = frappe.get_doc({
+			"doctype": "Time Log",
 			"from_time": first_start_time,
 			"to_time": last_end_time,
 			"for_manufacturing": 1,
