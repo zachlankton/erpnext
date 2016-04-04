@@ -44,6 +44,11 @@ def get_data():
 					"name": "Operation",
 					"description": _("Details of the operations carried out."),
 				},
+				{
+					"type": "doctype",
+					"name": "Shift Run Summary",
+					"description": _("Shift Run Summary Logs"),
+				}
 
 			]
 		},
