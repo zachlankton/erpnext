@@ -227,8 +227,7 @@ class StockEntry(StockController):
 					raw_materials[d.item_name]["qty"] += d.qty
 				else:
 					raw_materials[d.item_name] = {"qty": d.qty, "item_name": d.item_name, "s_warehouse": d.s_warehouse}
-		print "====================================="
-		pprint (raw_materials_required)
+
 		for d in raw_materials.values():
 			if d['item_name'] in raw_materials_required and d['s_warehouse']:
 				if d['qty'] != raw_materials_required[d['item_name']]:
