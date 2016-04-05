@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 import frappe.defaults
 from frappe import _
+from pprint import pprint
 from frappe.utils import cstr, cint, flt, comma_or, getdate, nowdate
 from erpnext.stock.utils import get_incoming_rate
 from erpnext.stock.stock_ledger import get_previous_sle, NegativeStockError
@@ -219,10 +220,19 @@ class StockEntry(StockController):
 					else:
 						raw_materials_required[rm.item_name] = (qty * rm.qty_consumed_per_unit)
 
-		for d in self.get('items'):
-			if d.item_name in raw_materials_required and d.s_warehouse:
-				if d.qty != raw_materials_required[d.item_name]:
-					frappe.throw(_("Raw Material Qty For {0} Should Be {1}.  Qty of parts manufactured consumes this much.").format(d.item_name, raw_materials_required[d.item_name]))
+		raw_materials = {}
+		for d in self.get("items"):
+			if d.s_warehouse and not d.t_warehouse:
+				if d.item_name in raw_materials:
+					raw_materials[d.item_name]["qty"] += d.qty
+				else:
+					raw_materials[d.item_name] = {"qty": d.qty, "item_name": d.item_name, "s_warehouse": d.s_warehouse}
+		print "====================================="
+		pprint (raw_materials_required)
+		for d in raw_materials.values():
+			if d['item_name'] in raw_materials_required and d['s_warehouse']:
+				if d['qty'] != raw_materials_required[d['item_name']]:
+					frappe.throw(_("Raw Material Qty For {0} Should Be {1}.  Qty of parts manufactured consumes this much.").format(d['item_name'], raw_materials_required[d['item_name']]))
 
 
 	def check_if_operations_completed(self):
@@ -882,6 +892,7 @@ class StockEntry(StockController):
 			se_child.expense_account = item_dict[d]["expense_account"] or expense_account
 			se_child.cost_center = item_dict[d]["cost_center"] or cost_center
 			se_child.scrap = item_dict[d]["scrap"]
+			se_child.batch_no = item_dict[d].get("batch", "")
 
 			if se_child.s_warehouse==None:
 				se_child.s_warehouse = self.from_warehouse
