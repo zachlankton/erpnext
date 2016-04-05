@@ -58,7 +58,8 @@ class ShiftRunSummary(Document):
 			"operation": prod_order.operations[0].operation,
 			"workstation": prod_order.operations[0].workstation,
 			"completed_qty": total_qty,
-			"shift_run_summary": self.name
+			"shift_run_summary": self.name,
+			"employee": ""
 		})
 		time_log.save()
 		time_log.submit()

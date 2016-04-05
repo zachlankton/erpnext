@@ -153,7 +153,7 @@ class ProductionOrder(Document):
 		if not self.fg_warehouse:
 			frappe.throw(_("For Warehouse is required before Submit"))
 		frappe.db.set(self,'status', 'Submitted')
-		self.make_time_logs()
+# 		self.make_time_logs()
 		self.update_planned_qty()
 
 
