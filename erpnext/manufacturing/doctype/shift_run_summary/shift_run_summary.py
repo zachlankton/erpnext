@@ -14,6 +14,12 @@ class ShiftRunSummary(Document):
 		last_end_time = self.get_last_end_time()
 		good_qty = self.get_good_qty()
 		total_qty = self.get_total_qty()
+		
+		default_scrap_warehouse = frappe.db.sql("SELECT *  FROM `tabWarehouse` WHERE `default_scrap_warehouse` = 1", as_dict=1)
+		if len(default_scrap_warehouse) == 0:
+			default_scrap_warehouse = None
+		else:
+			default_scrap_warehouse = default_scrap_warehouse[0]["name"]
 
 		prod_order = frappe.get_doc("Production Order", self.production_order)
 		bom = frappe.get_doc("BOM", prod_order.bom_no)
@@ -84,8 +90,8 @@ class ShiftRunSummary(Document):
 
 				rm['qty'] = (rm['qty'] * ( 1 - ( boms[key]['scrap'] / 100 ) ) )
 				scrap_matl[key] = {"qty": rm['qty'] * (boms[key]['scrap'] / 100),
-					"from_warehouse": prod_order.wip_warehouse,
-					"to_warehouse": "",
+					"from_warehouse": "",
+					"to_warehouse": default_scrap_warehouse,
 					"description": rm.description,
 					"uom": rm.uom,
 					"batch": part.batch,
@@ -119,7 +125,7 @@ class ShiftRunSummary(Document):
 						"item_name": part.part,
 						"qty": part.scrap_parts_qty,
 						"from_warehouse": "",
-						"to_warehouse": prod_order.fg_warehouse,
+						"to_warehouse": default_scrap_warehouse,
 						"description": item.description,
 						"stock_uom": item.stock_uom,
 						"item_name": part.part,
