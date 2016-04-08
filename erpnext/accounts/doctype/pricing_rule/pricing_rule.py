@@ -161,7 +161,7 @@ def get_pricing_rule_for_item(args):
 			})
 		elif pricing_rule.price_or_discount == "Lot Charge":
 			item_details.update({
-				"price_list_rate": 0.0,
+				"price_list_rate": pricing_rule.price/flt(args.get("qty")),
 				"amount": pricing_rule.price,
 				"discount_percentage": 0.0,
 				"is_lot_charge": 1
