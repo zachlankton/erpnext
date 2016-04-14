@@ -228,10 +228,10 @@ class StockEntry(StockController):
 				else:
 					raw_materials[d.item_name] = {"qty": d.qty, "item_name": d.item_name, "s_warehouse": d.s_warehouse}
 
-		for d in raw_materials.values():
-			if d['item_name'] in raw_materials_required and d['s_warehouse']:
-				if round(d['qty'],9) != round(raw_materials_required[d['item_name']],9):
-					frappe.throw(_("Raw Material Qty For {0} Should Be {1} ({2}).  Qty of parts manufactured consumes this much.").format(d['item_name'], raw_materials_required[d['item_name']], d['qty'] ))
+		# for d in raw_materials.values():
+		# 	if d['item_name'] in raw_materials_required and d['s_warehouse']:
+		# 		if round(d['qty'],9) != round(raw_materials_required[d['item_name']],9):
+		# 			frappe.throw(_("Raw Material Qty For {0} Should Be {1} ({2}).  Qty of parts manufactured consumes this much.").format(d['item_name'], raw_materials_required[d['item_name']], d['qty'] ))
 
 
 	def check_if_operations_completed(self):
