@@ -22,7 +22,7 @@ class TimeLog(Document):
 	def validate(self):
 		self.set_status()
 		self.set_title()
-		self.validate_overlap()
+		# self.validate_overlap()
 		self.validate_timings()
 		self.calculate_total_hours()
 		self.validate_time_log_for()
