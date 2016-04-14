@@ -681,8 +681,31 @@ class StockEntry(StockController):
 				self.load_items_from_bom()
 
 		if self.purpose == "Manufacture": self.add_scrap_items()
+		
+		if self.purchase_order:
+			self.get_po_items()
+		
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
+
+	def get_po_items(self):
+		po = frappe.get_doc("Purchase Order", self.purchase_order)
+		
+		for item in po.items:
+			bom = frappe.get_doc("BOM", item.bom)
+			
+			for rm in bom.items:
+
+				self.add_to_stock_entry_detail({
+					rm.item_code: {
+						"qty": rm.qty_consumed_per_unit * item.qty,
+						"item_name": rm.item_name,
+						"description": rm.description,
+						"stock_uom": rm.stock_uom,
+						"expense_account": "",
+						"cost_center": ""
+					}
+				})
 
 	def add_scrap_items(self):
 		scrap = self.get_total_raw_scrap()
