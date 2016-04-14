@@ -310,8 +310,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-04-04 11:44:09.358888", 
- "modified_by": "Administrator", 
+ "modified": "2016-04-05 16:11:53.568049", 
+ "modified_by": "zach@mmpmg.com", 
  "module": "Manufacturing", 
  "name": "Shift Run Summary", 
  "name_case": "", 
@@ -354,7 +354,7 @@
    "role": "Shift Run Summary User", 
    "set_user_permissions": 0, 
    "share": 0, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }, 
   {
