@@ -392,3 +392,14 @@ def update_status(status, name):
 	po.update_status(status)
 	po.update_delivered_qty_in_sales_order()
 
+@frappe.whitelist(allow_guest=True)
+def approve_po(po, owner):
+	poDoc = frappe.get_doc("Purchase Order", po)
+	if poDoc.owner == owner and poDoc.workflow_state == "Needs Approval":
+		poDoc.workflow_state = "Approved"
+		poDoc.save()
+		return "Purchase Order Approved!"
+	else:
+		return "Error!"
+
+
