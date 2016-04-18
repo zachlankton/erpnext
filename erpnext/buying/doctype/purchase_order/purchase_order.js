@@ -100,10 +100,10 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 		var items = $.map(cur_frm.doc.items, function(d) { return d.bom ? d.item_code : false; });
 		var me = this;
 
-		if(items.length===1) {
+		// if(items.length===1) {
 			me._make_stock_entry(items[0]);
 			return;
-		}
+		// }
 		frappe.prompt({fieldname:"item", options: items, fieldtype:"Select",
 			label: __("Select Item for Transfer"), reqd: 1}, function(data) {
 			me._make_stock_entry(data.item);
