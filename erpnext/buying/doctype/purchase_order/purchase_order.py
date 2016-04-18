@@ -274,6 +274,9 @@ class PurchaseOrder(BuyingController):
 		for item in self.items:
 			if item.delivered_by_supplier == 1:
 				item.received_qty = item.qty
+	def approve_po(self):
+		self.workflow_state = "Approved"
+		self.save(ignore_permissions="true")
 
 @frappe.whitelist()
 def stop_or_unstop_purchase_orders(names, status):
@@ -393,8 +396,7 @@ def update_status(status, name):
 def approve_po(po, owner):
 	poDoc = frappe.get_doc("Purchase Order", po)
 	if poDoc.owner == owner and poDoc.workflow_state == "Needs Approval":
-		poDoc.workflow_state = "Approved"
-		poDoc.save()
+		poDoc.approve_po()
 		return "Purchase Order Approved!"
 	else:
 		return "Error!"
