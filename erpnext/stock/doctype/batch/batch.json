@@ -216,8 +216,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 5, 
- "modified": "2016-04-04 11:50:01.220421", 
- "modified_by": "Administrator", 
+ "modified": "2016-04-21 10:49:59.225255", 
+ "modified_by": "zach@mmpmg.com", 
  "module": "Stock", 
  "name": "Batch", 
  "owner": "harshada@webnotestech.com", 
@@ -246,7 +246,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 0, 
    "export": 0, 
@@ -260,7 +260,7 @@
    "set_user_permissions": 0, 
    "share": 0, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }
  ], 
  "read_only": 0, 

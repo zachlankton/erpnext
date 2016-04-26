@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+import time
 from pprint import pprint
 from frappe.model.document import Document
 from erpnext.stock.doctype.stock_entry.stock_entry import get_additional_costs
@@ -63,6 +64,8 @@ class ShiftRunSummary(Document):
 		})
 		time_log.save()
 		time_log.submit()
+		
+		prod_order = frappe.get_doc("Production Order", self.production_order)
 
 		manufacture = frappe.new_doc("Stock Entry")
 		manufacture.shift_run_summary = self.name
@@ -177,9 +180,6 @@ class ShiftRunSummary(Document):
 		for item in self.parts:
 			if first_start_time > item.start_time:
 				first_start_time = item.start_time
-		for item in self.downtime:
-			if first_start_time > item.downtime_start:
-				first_start_time = item.downtime_start
 		return first_start_time
 
 	def get_last_end_time(self):
@@ -187,9 +187,6 @@ class ShiftRunSummary(Document):
 		for item in self.parts:
 			if last_end_time < item.end_time:
 				last_end_time = item.end_time
-		for item in self.downtime:
-			if last_end_time < item.downtime_end:
-				last_end_time = item.downtime_end
 		return last_end_time
 
 	def get_good_qty(self):

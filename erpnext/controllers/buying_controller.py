@@ -128,7 +128,8 @@ class BuyingController(StockController):
 			for item in self.get("items"):
 				if item in self.sub_contracted_items and not item.bom:
 					frappe.throw(_("Please select BOM in BOM field for Item {0}").format(item.item_code))
-
+				if self.doctype == "Purchase Order" and not item.supplier_part_no:
+					frappe.throw(_("Item {0} does not have a supplier part number, make sure this is the correct item").format(item.item_code))
 		else:
 			for item in self.get("items"):
 				if item.bom:

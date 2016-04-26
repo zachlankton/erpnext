@@ -276,7 +276,7 @@ class PurchaseOrder(BuyingController):
 				item.received_qty = item.qty
 	def approve_po(self):
 		self.workflow_state = "Approved"
-		self.save(ignore_permissions="true")
+		self.save(ignore_permissions=True)
 
 @frappe.whitelist()
 def stop_or_unstop_purchase_orders(names, status):
