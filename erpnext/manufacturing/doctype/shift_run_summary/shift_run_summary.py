@@ -78,7 +78,10 @@ class ShiftRunSummary(Document):
 		manufacture.fg_completed_qty = total_qty
 		manufacture.from_warehouse = prod_order.wip_warehouse
 		manufacture.to_warehouse = prod_order.fg_warehouse
-		additional_costs = get_additional_costs(prod_order, fg_qty=total_qty)
+		additional_costs = [{
+			"description": "Operating Cost as per Production Order / BOM",
+			"amount": time_log.hours * prod_order.operations[0].hour_rate
+		}]
 		manufacture.set("additional_costs", additional_costs)
 
 		se_parts = {}

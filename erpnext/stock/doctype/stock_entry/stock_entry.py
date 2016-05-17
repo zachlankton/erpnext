@@ -452,9 +452,9 @@ class StockEntry(StockController):
 						and `tabStock Entry Detail`.parent = `tabStock Entry`.name""",
 							(self.purchase_order, se_item.item_code))[0][0]
 
-				if total_supplied > total_allowed:
-					frappe.throw(_("Not allowed to tranfer more {0} than {1} against Purchase Order {2}").format(se_item.item_code,
-						total_allowed, self.purchase_order))
+			#	if total_supplied > total_allowed:
+			#		frappe.throw(_("Not allowed to tranfer more {0} than {1} against Purchase Order {2}").format(se_item.item_code,
+			#			total_allowed, self.purchase_order))
 
 	def validate_bom(self):
 		for d in self.get('items'):

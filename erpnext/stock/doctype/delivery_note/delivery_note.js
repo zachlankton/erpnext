@@ -87,6 +87,10 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 		})
 	},
 
+	ship_from: function(){
+		erpnext.utils.get_address_display(this.frm, "ship_from", "ship_from_address");
+	},
+
 	tc_name: function() {
 		this.get_terms();
 	},

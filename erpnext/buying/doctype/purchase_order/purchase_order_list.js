@@ -1,13 +1,15 @@
 frappe.listview_settings['Purchase Order'] = {
-	add_fields: ["base_grand_total", "company", "currency", "supplier",
+	add_fields: ["po_acknowledged", "base_grand_total", "company", "currency", "supplier",
 		"supplier_name", "per_received", "per_billed", "status"],
 	get_indicator: function(doc) {
-        if(doc.status==="Stopped") {
+	if(doc.status==="Stopped") {
 			return [__("Stopped"), "darkgrey", "status,=,Stopped"];
 		} else if(doc.status==="Closed"){
 			return [__("Closed"), "green", "status,=,Closed"];
 		} else if (doc.status==="Delivered") {
 			return [__("Delivered"), "green", "status,=,Closed"];
+		}else if( doc.po_acknowledged == 0 ){
+			return [__("Not Acknowledged"), "red", "po_acknowledged,=,No"];
 		}else if(flt(doc.per_received, 2) < 100 && doc.status!=="Stopped") {
 			if(flt(doc.per_billed, 2) < 100) {
 				return [__("To Receive and Bill"), "orange",
