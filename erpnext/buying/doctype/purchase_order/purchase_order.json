@@ -1966,7 +1966,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "contact_person", 
@@ -2631,7 +2631,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-05-13 10:38:20.619661", 
+ "modified": "2016-05-25 13:05:53.150888", 
  "modified_by": "zach@mmpmg.com", 
  "module": "Buying", 
  "name": "Purchase Order", 

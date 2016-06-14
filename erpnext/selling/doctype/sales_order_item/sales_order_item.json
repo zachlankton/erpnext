@@ -1289,8 +1289,8 @@
  "istable": 1, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2015-12-11 14:53:24.444343", 
- "modified_by": "Administrator", 
+ "modified": "2016-05-18 13:10:41.106920", 
+ "modified_by": "zach@mmpmg.com", 
  "module": "Selling", 
  "name": "Sales Order Item", 
  "owner": "Administrator", 
@@ -1298,6 +1298,5 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_field": "modified", 
- "sort_order": "DESC", 
- "version": 0
+ "sort_order": "DESC"
 }

@@ -338,14 +338,21 @@ class StockEntry(StockController):
 					scrap_item_resale_rate = frappe.db.get_value("Item", d.item_name, "scrap_item_resale_rate")
 					scrap_additional_rate = 0
 					if scrap_item_resale_rate and scrap_item_resale_rate > 0:
-						scrap_additional_rate = d.basic_rate - flt(scrap_item_resale_rate)
+						scrap_loss_rate = d.basic_rate - flt(scrap_item_resale_rate)
 
 					scrap_amount = 0
+					scrap_loss = 0
 					for other_items in self.get("items"):
 						if  other_items.t_warehouse and other_items.item_name == d.item_name:
-							scrap_amount = other_items.transfer_qty * d.basic_rate
-
-					basic_raw_material_rates[d.item_name] = {"basic_rt": flt(d.basic_rate) + scrap_additional_rate, "basic_amnt": flt(d.basic_amount) - flt(scrap_amount), "scrap_resale_rate": scrap_item_resale_rate}
+							scrap_amount += other_items.transfer_qty * d.basic_rate
+							scrap_loss += other_items.transfer_qty * scrap_loss_rate
+					basic_raw_material_rates[d.item_name] = {
+						"basic_rt": flt(d.basic_rate), 
+						"scrap_loss_rate":  scrap_loss_rate, 
+						"scrap_loss": scrap_loss,
+						"basic_amnt": flt(d.basic_amount) - flt(scrap_amount), 
+						"scrap_resale_rate": scrap_item_resale_rate
+					}
 
 
 			for d in self.get('items'):
@@ -364,7 +371,7 @@ class StockEntry(StockController):
 							scrap_qty = total_qty - qty
 							scrap_original_amount = ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["basic_rt"] * scrap_qty)
 							scrap_amount = ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["scrap_resale_rate"] * scrap_qty)
-							scrap_difference = scrap_original_amount - scrap_amount
+							scrap_difference = scrap_original_amount - scrap_amount + basic_raw_material_rates[rm.item_name]["scrap_loss"]
 							d.basic_amount += ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["basic_rt"] * d.transfer_qty) + scrap_difference
 						else:
 							d.basic_amount += ((rm.qty_consumed_per_unit - (rm.qty_consumed_per_unit * (rm.scrap/100) ) ) * basic_raw_material_rates[rm.item_name]["scrap_resale_rate"] * d.transfer_qty)
