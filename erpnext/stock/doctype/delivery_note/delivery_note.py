@@ -373,8 +373,8 @@ def make_sales_invoice(source_name, target_doc=None):
 			"field_map": {
 				"name": "dn_detail",
 				"parent": "delivery_note",
-				"so_detail": "so_detail",
-				"against_sales_order": "sales_order",
+			#	"so_detail": "so_detail",
+			#	"against_sales_order": "sales_order",
 				"serial_no": "serial_no"
 			},
 			"postprocess": update_item,
