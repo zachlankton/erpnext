@@ -26,7 +26,10 @@ def get_notification_config():
 			"Expense Claim": {"approval_status": "Draft"},
 			"Job Applicant": {"status": "Open"},
 			"Purchase Receipt": {"docstatus": 0},
-			"Delivery Note": {"docstatus": 0},
+			"Delivery Note": {
+				"status": ("in", ("Draft", "To Bill")), 
+				"docstatus": ("<", 2)
+			},
 			"Stock Entry": {"docstatus": 0},
 			"Material Request": {"docstatus": 0},
 			"Purchase Order": {
